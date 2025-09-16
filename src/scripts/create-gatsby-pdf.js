@@ -2,9 +2,9 @@
  * Script to generate a demo PDF for The Great Gatsby
  * Run with: node src/scripts/create-gatsby-pdf.js
  */
-const fs = require('fs');
-const path = require('path');
-const PDFDocument = require('pdfkit');
+import fs from 'fs';
+import path from 'path';
+import PDFDocument from 'pdfkit';
 
 // Ensure the samples directory exists
 const samplesDir = path.join(process.cwd(), 'public', 'samples');

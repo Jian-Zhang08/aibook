@@ -12,11 +12,11 @@ interface QuestionFormProps {
 /**
  * Form component for submitting questions about a book
  */
-export default function QuestionForm({ 
-  onSubmit, 
-  bookTitle, 
+export default function QuestionForm({
+  onSubmit,
+  bookTitle,
   isLoading,
-  suggestedQuestions = [] 
+  suggestedQuestions = []
 }: QuestionFormProps) {
   const [question, setQuestion] = useState('');
 
@@ -38,7 +38,7 @@ export default function QuestionForm({
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-8">
       <div className="mb-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">Ask me about "{bookTitle}"</h2>
+        <h2 className="text-2xl font-bold mb-4">Ask me about &ldquo;{bookTitle}&rdquo;</h2>
         <p className="text-gray-600 dark:text-gray-400 text-sm">
           Type a question about characters, symbols, or plot points.
         </p>
@@ -54,7 +54,7 @@ export default function QuestionForm({
                 onClick={() => handleSuggestedQuestion(q)}
                 disabled={isLoading}
               >
-                Try asking about: "{q}"
+                Try asking about: &ldquo;{q}&rdquo;
               </button>
             ))}
           </div>

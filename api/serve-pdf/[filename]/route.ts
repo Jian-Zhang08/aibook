@@ -14,25 +14,25 @@ const SAMPLE_DIR = join(process.cwd(), 'public', 'samples');
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { filename: string } }
+  { params }: { params: Promise<{ filename: string }> }
 ) {
   try {
     // Ensure params is fully resolved before accessing its properties
     const { filename } = await Promise.resolve(params);
-    
+
     if (!filename) {
       return NextResponse.json(
         { error: 'Filename is required' },
         { status: 400 }
       );
     }
-    
+
     // Try multiple locations for the PDF file
     const possiblePaths = [
       join(UPLOADS_DIR, filename),
       join(SAMPLE_DIR, filename),
     ];
-    
+
     // Find the first path that exists
     let pdfPath: string | null = null;
     for (const path of possiblePaths) {
@@ -41,7 +41,7 @@ export async function GET(
         break;
       }
     }
-    
+
     // If no PDF was found, return 404
     if (!pdfPath) {
       console.error(`PDF not found: ${filename}. Checked paths:`, possiblePaths);
@@ -50,12 +50,12 @@ export async function GET(
         { status: 404 }
       );
     }
-    
+
     console.log(`Serving PDF from: ${pdfPath}`);
-    
+
     // Read the file
     const fileBuffer = await readFile(pdfPath);
-    
+
     // Return the PDF file with appropriate headers
     return new NextResponse(fileBuffer, {
       headers: {
@@ -65,7 +65,7 @@ export async function GET(
         'Cache-Control': 'public, max-age=3600',
       },
     });
-    
+
   } catch (error) {
     console.error('Error serving PDF file:', error);
     return NextResponse.json(

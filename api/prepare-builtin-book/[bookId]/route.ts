@@ -8,19 +8,19 @@ import builtinBooks from '@/data/builtinBooks';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { bookId: string } }
+  { params }: { params: Promise<{ bookId: string }> }
 ) {
   try {
     // Ensure params is fully resolved before accessing its properties
     const { bookId } = await Promise.resolve(params);
-    
+
     if (!bookId) {
       return NextResponse.json(
         { error: 'Book ID is required' },
         { status: 400 }
       );
     }
-    
+
     // Look up the book in our list of built-in books
     const book = builtinBooks.find(b => b.id === bookId);
     if (!book) {
@@ -29,17 +29,17 @@ export async function GET(
         { status: 404 }
       );
     }
-    
+
     // Setup the book (copy to samples if needed)
     const success = await setupBuiltinBook(bookId);
-    
+
     if (!success) {
       return NextResponse.json(
         { error: 'Failed to prepare book' },
         { status: 500 }
       );
     }
-    
+
     // Return book info
     return NextResponse.json({
       id: book.id,
@@ -47,7 +47,7 @@ export async function GET(
       author: book.author,
       message: 'Book prepared successfully'
     });
-    
+
   } catch (error) {
     console.error('Error preparing built-in book:', error);
     return NextResponse.json(

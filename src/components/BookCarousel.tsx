@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { BuiltinBook } from '@/data/builtinBooks';
 import BookCard from './BookCard';
 
@@ -25,27 +25,27 @@ export default function BookCarousel({ books, onBookSelect, disabled = false }: 
   const [thumbPosition, setThumbPosition] = useState(0);
   const [thumbWidth, setThumbWidth] = useState(100);
 
-  const updateArrows = () => {
+  const updateArrows = useCallback(() => {
     if (!carouselRef.current) return;
-    
+
     const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
     setShowLeftArrow(scrollLeft > 0);
     setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 10);
-    
+
     // Update thumb position and width
     updateThumbPositionAndWidth();
-  };
+  }, []);
 
   const updateThumbPositionAndWidth = () => {
     if (!carouselRef.current || !scrollbarRef.current || !thumbRef.current) return;
-    
+
     const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
     const scrollbarWidth = scrollbarRef.current.clientWidth;
-    
+
     // Calculate how wide the thumb should be based on visible portion
     const thumbWidthValue = Math.max(60, (clientWidth / scrollWidth) * scrollbarWidth);
     setThumbWidth(thumbWidthValue);
-    
+
     // Calculate position of the thumb
     const scrollRatio = scrollLeft / (scrollWidth - clientWidth);
     const maxThumbPosition = scrollbarWidth - thumbWidthValue;
@@ -59,12 +59,12 @@ export default function BookCarousel({ books, onBookSelect, disabled = false }: 
       updateThumbPositionAndWidth();
       updateArrows();
     };
-    
+
     if (carousel) {
       carousel.addEventListener('scroll', updateArrows);
       // Initial check
       updateArrows();
-      
+
       // Update on resize as well
       window.addEventListener('resize', handleResize);
       return () => {
@@ -72,17 +72,17 @@ export default function BookCarousel({ books, onBookSelect, disabled = false }: 
         window.removeEventListener('resize', handleResize);
       };
     }
-  }, []);
+  }, [updateArrows]);
 
   const scroll = (direction: 'left' | 'right') => {
     if (!carouselRef.current) return;
-    
+
     const carousel = carouselRef.current;
     const scrollAmount = carousel.clientWidth * 0.8;
-    const targetScroll = direction === 'right' 
-      ? carousel.scrollLeft + scrollAmount 
+    const targetScroll = direction === 'right'
+      ? carousel.scrollLeft + scrollAmount
       : carousel.scrollLeft - scrollAmount;
-    
+
     carousel.scrollTo({
       left: targetScroll,
       behavior: 'smooth'
@@ -91,7 +91,7 @@ export default function BookCarousel({ books, onBookSelect, disabled = false }: 
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!carouselRef.current || !scrollbarRef.current) return;
-    
+
     setIsDragging(true);
     setStartX(e.clientX);
     setScrollLeft(carouselRef.current.scrollLeft);
@@ -100,20 +100,20 @@ export default function BookCarousel({ books, onBookSelect, disabled = false }: 
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || !carouselRef.current || !scrollbarRef.current || !thumbRef.current) return;
-    
+
     const x = e.clientX;
     const deltaX = x - startX;
-    
+
     const scrollbarWidth = scrollbarRef.current.clientWidth;
     const thumbWidthValue = thumbWidth;
-    
+
     // The scroll track width (total width minus thumb width)
     const scrollTrackWidth = scrollbarWidth - thumbWidthValue;
-    
+
     // How much to scroll the carousel for each pixel of thumb movement
     const { scrollWidth, clientWidth } = carouselRef.current;
     const scrollRatio = (scrollWidth - clientWidth) / scrollTrackWidth;
-    
+
     // Move the carousel
     carouselRef.current.scrollLeft = scrollLeft + (deltaX * scrollRatio);
   };
@@ -126,23 +126,23 @@ export default function BookCarousel({ books, onBookSelect, disabled = false }: 
   const handleScrollbarClick = (e: React.MouseEvent) => {
     if (!carouselRef.current || !scrollbarRef.current || !thumbRef.current) return;
     if (e.target === thumbRef.current) return;
-    
+
     // Get click position relative to scrollbar
     const scrollbarRect = scrollbarRef.current.getBoundingClientRect();
     const clickPosition = e.clientX - scrollbarRect.left;
-    
+
     // Calculate target position for the center of the thumb
     const adjustedPosition = Math.max(thumbWidth / 2, Math.min(clickPosition, scrollbarRect.width - thumbWidth / 2));
-    
+
     // Calculate the scroll position for the carousel
     const scrollbarWidth = scrollbarRect.width;
     const effectiveScrollbarWidth = scrollbarWidth - thumbWidth;
     const scrollRatio = (adjustedPosition - thumbWidth / 2) / effectiveScrollbarWidth;
-    
+
     const { scrollWidth, clientWidth } = carouselRef.current;
     const maxScroll = scrollWidth - clientWidth;
     const targetScroll = scrollRatio * maxScroll;
-    
+
     carouselRef.current.scrollTo({
       left: targetScroll,
       behavior: 'smooth'
@@ -161,16 +161,16 @@ export default function BookCarousel({ books, onBookSelect, disabled = false }: 
       if (isDragging && carouselRef.current && scrollbarRef.current) {
         const x = e.clientX;
         const deltaX = x - startX;
-        
+
         const scrollbarWidth = scrollbarRef.current.clientWidth;
-        
+
         // The scroll track width (total width minus thumb width)
         const scrollTrackWidth = scrollbarWidth - thumbWidth;
-        
+
         // How much to scroll the carousel for each pixel of thumb movement
         const { scrollWidth, clientWidth } = carouselRef.current;
         const scrollRatio = (scrollWidth - clientWidth) / scrollTrackWidth;
-        
+
         // Move the carousel
         carouselRef.current.scrollLeft = scrollLeft + (deltaX * scrollRatio);
       }
@@ -189,7 +189,7 @@ export default function BookCarousel({ books, onBookSelect, disabled = false }: 
     <div className="relative w-full">
       {/* Left Arrow */}
       {showLeftArrow && (
-        <button 
+        <button
           className="absolute left-[-36px] top-1/2 transform -translate-y-1/2 z-10 bg-white dark:bg-gray-800 rounded-full p-2 shadow-md border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
           onClick={() => scroll('left')}
           aria-label="Scroll left"
@@ -199,16 +199,16 @@ export default function BookCarousel({ books, onBookSelect, disabled = false }: 
           </svg>
         </button>
       )}
-      
+
       {/* Book Cards */}
-      <div 
+      <div
         ref={carouselRef}
         className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {books.map(book => (
           <div key={book.id} className="flex-shrink-0" style={{ width: '300px' }}>
-            <BookCard 
+            <BookCard
               book={book}
               onClick={onBookSelect}
               disabled={disabled}
@@ -216,19 +216,19 @@ export default function BookCarousel({ books, onBookSelect, disabled = false }: 
           </div>
         ))}
       </div>
-      
+
       {/* Custom Scrollbar */}
-      <div 
+      <div
         ref={scrollbarRef}
         className="h-2 bg-gray-100 dark:bg-gray-800/50 rounded-full mt-4 cursor-pointer relative"
         onClick={handleScrollbarClick}
       >
-        <div 
+        <div
           ref={thumbRef}
           className={`absolute top-0 h-full bg-purple-300 hover:bg-purple-400 dark:bg-purple-400/50 dark:hover:bg-purple-400/70 rounded-full 
             transition-colors duration-200 cursor-grab ${isDragging ? 'cursor-grabbing' : ''}`}
-          style={{ 
-            width: `${thumbWidth}px`, 
+          style={{
+            width: `${thumbWidth}px`,
             left: `${thumbPosition}px`,
           }}
           onMouseDown={handleMouseDown}
@@ -236,10 +236,10 @@ export default function BookCarousel({ books, onBookSelect, disabled = false }: 
           onMouseUp={handleMouseUp}
         />
       </div>
-      
+
       {/* Right Arrow */}
       {showRightArrow && (
-        <button 
+        <button
           className="absolute right-[-36px] top-1/2 transform -translate-y-1/2 z-10 bg-white dark:bg-gray-800 rounded-full p-2 shadow-md border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
           onClick={() => scroll('right')}
           aria-label="Scroll right"
@@ -254,8 +254,8 @@ export default function BookCarousel({ books, onBookSelect, disabled = false }: 
 }
 
 // This will hide scrollbars in modern browsers
-const scrollbarHideStyles = `
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-`; 
+// const scrollbarHideStyles = `
+// .scrollbar-hide::-webkit-scrollbar {
+//   display: none;
+// }
+// `; 

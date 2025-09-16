@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import BookHeader from '@/components/BookHeader';
 import QuestionForm from '@/components/QuestionForm';
 import AnswerDisplay, { AIResponse } from '@/components/AnswerDisplay';
@@ -136,7 +137,7 @@ const themeData = [
     title: 'The American Dream',
     description: 'One of the central themes of the novel is the corruption of the American Dream, which suggests that anyone can achieve success through hard work and determination. Through Gatsby\'s ultimate failure and death, Fitzgerald suggests that this ideal has been corrupted by the pursuit of wealth for its own sake.',
     examples: [
-      { 
+      {
         text: "Gatsby believed in the green light, the orgastic future that year by year recedes before us. It eluded us then, but that's no matter—tomorrow we will run faster, stretch out our arms farther...",
         reference: "Chapter 9"
       },
@@ -185,15 +186,15 @@ const themeData = [
 export default function DynamicBookPage() {
   const params = useParams();
   const bookId = params.bookId as string;
-  
+
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [book, setBook] = useState<ProcessedBook | null>(null);
-  
+
   const [question, setQuestion] = useState<string>('');
   const [response, setResponse] = useState<AIResponse | null>(null);
   const [isAnswerLoading, setIsAnswerLoading] = useState<boolean>(false);
-  
+
   // PDF viewer state
   const [isPdfViewerOpen, setIsPdfViewerOpen] = useState<boolean>(false);
 
@@ -211,7 +212,7 @@ export default function DynamicBookPage() {
     const fetchBook = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
         // For the pre-built Great Gatsby page, use hardcoded data
         if (bookId === 'the-great-gatsby') {
@@ -226,17 +227,17 @@ export default function DynamicBookPage() {
           setLoading(false);
           return;
         }
-        
+
         // Otherwise, fetch the book from the API
         const response = await fetch(`/api/books/${bookId}`);
-        
+
         if (!response.ok) {
           throw new Error('Failed to load book');
         }
-        
+
         const bookData = await response.json();
         setBook(bookData);
-        
+
       } catch (error) {
         console.error('Error loading book:', error);
         setError(error instanceof Error ? error.message : 'An error occurred');
@@ -244,10 +245,10 @@ export default function DynamicBookPage() {
         setLoading(false);
       }
     };
-    
+
     fetchBook();
   }, [bookId]);
-  
+
   /**
    * Handle opening the PDF viewer
    */
@@ -260,7 +261,7 @@ export default function DynamicBookPage() {
       alert('There was an error opening the book. Please try again.');
     }
   };
-  
+
   /**
    * Handle closing the PDF viewer
    */
@@ -274,7 +275,7 @@ export default function DynamicBookPage() {
   const handleQuestionSubmit = async (questionText: string) => {
     setQuestion(questionText);
     setIsAnswerLoading(true);
-    
+
     try {
       // Check if we're on the pre-built Great Gatsby page
       if (bookId === 'the-great-gatsby') {
@@ -282,7 +283,7 @@ export default function DynamicBookPage() {
         // This creates a more seamless experience
         const lowerQuestion = questionText.toLowerCase();
         let response: AIResponse;
-        
+
         if (lowerQuestion.includes('gatsby') && lowerQuestion.includes('life')) {
           // Use the pre-defined timeline data from the Great Gatsby page
           response = {
@@ -372,12 +373,12 @@ export default function DynamicBookPage() {
             text: "The Great Gatsby, written by F. Scott Fitzgerald and published in 1925, is a novel set in the Jazz Age on Long Island. It explores themes of wealth, class, love, and the American Dream through the tragic story of Jay Gatsby and his pursuit of his lost love, Daisy Buchanan. The novel is narrated by Nick Carraway, who moves next door to the mysterious millionaire Gatsby and becomes drawn into his world of lavish parties and obsessive dreams. Despite its initial poor reception, it's now considered a literary classic that captures the decadence and moral emptiness of the 1920s era."
           };
         }
-        
+
         setResponse(response);
         setIsAnswerLoading(false);
         return;
       }
-      
+
       // For uploaded books, query the API
       const response = await fetch('/api/query-book', {
         method: 'POST',
@@ -389,14 +390,14 @@ export default function DynamicBookPage() {
           bookId: bookId
         }),
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to get response');
       }
-      
+
       const responseData = await response.json();
       setResponse(responseData);
-      
+
     } catch (error) {
       console.error('Error getting response:', error);
       setResponse({
@@ -428,9 +429,9 @@ export default function DynamicBookPage() {
         <div className="text-center max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
           <h1 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4">Error Loading Book</h1>
           <p className="text-gray-700 dark:text-gray-300 mb-6">{error || 'Book not found'}</p>
-          <a href="/" className="text-purple-600 dark:text-purple-400 hover:underline">
+          <Link href="/" className="text-purple-600 dark:text-purple-400 hover:underline">
             Return to Home
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -438,34 +439,34 @@ export default function DynamicBookPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <BookHeader 
-        title={book.title} 
-        author={book.author} 
+      <BookHeader
+        title={book.title}
+        author={book.author}
         onReadBook={handleReadBook}
       />
-      
+
       <main>
-        <QuestionForm 
-          onSubmit={handleQuestionSubmit} 
-          bookTitle={book.title} 
+        <QuestionForm
+          onSubmit={handleQuestionSubmit}
+          bookTitle={book.title}
           isLoading={isAnswerLoading}
           suggestedQuestions={suggestedQuestions}
         />
-        
+
         {(question || isAnswerLoading) && (
-          <AnswerDisplay 
-            question={question} 
-            response={response} 
-            isLoading={isAnswerLoading} 
+          <AnswerDisplay
+            question={question}
+            response={response}
+            isLoading={isAnswerLoading}
           />
         )}
       </main>
-      
+
       {/* PDF Viewer Modal */}
       {isPdfViewerOpen && (
-        <EmbeddedPDFViewer 
-          pdfUrl={`/api/serve-pdf/${bookId}.pdf`} 
-          onClose={handleClosePdfViewer} 
+        <EmbeddedPDFViewer
+          pdfUrl={`/api/serve-pdf/${bookId}.pdf`}
+          onClose={handleClosePdfViewer}
         />
       )}
     </div>

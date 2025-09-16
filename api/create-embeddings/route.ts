@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     // Create embeddings for each chunk
     const embeddingPromises = chunks.map(chunk => embeddings.embedQuery(chunk));
-    const vectors = await Promise.all(embeddingPromises);
+    await Promise.all(embeddingPromises);
 
     // Store the embeddings (in a real implementation, you would save these to a database)
     // For now, we'll just return success

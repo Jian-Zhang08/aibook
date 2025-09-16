@@ -24,14 +24,14 @@ function isOpenAIAvailable(): boolean {
 export async function POST(request: NextRequest) {
   try {
     const { question, bookId, book } = await request.json();
-    
+
     if (!question) {
       return NextResponse.json(
         { error: 'Question is required' },
         { status: 400 }
       );
     }
-    
+
     // Handle the Great Gatsby case separately with pre-configured responses
     if (bookId === 'the-great-gatsby' || book === 'the-great-gatsby') {
       // This would redirect to the existing implementation
@@ -40,32 +40,32 @@ export async function POST(request: NextRequest) {
         text: "This query would be handled by the specialized Great Gatsby page."
       }, { status: 200 });
     }
-    
+
     if (!bookId) {
       return NextResponse.json(
         { error: 'Book ID is required' },
         { status: 400 }
       );
     }
-    
+
     // Check if the PDF file exists
     const pdfPath = join(UPLOADS_DIR, `${bookId}.pdf`);
-    
+
     if (!existsSync(pdfPath)) {
       return NextResponse.json(
         { error: 'Book not found' },
         { status: 404 }
       );
     }
-    
+
     // Read the file
     const fileBuffer = await readFile(pdfPath);
-    
+
     // Extract text from the PDF
     try {
       const pdfData = await pdf(fileBuffer);
       const bookText = pdfData.text;
-      
+
       // If OpenAI API is available, use it for advanced AI responses
       if (isOpenAIAvailable()) {
         console.log('Using OpenAI integration for book query');
@@ -77,14 +77,14 @@ export async function POST(request: NextRequest) {
           // Fall back to basic processing if OpenAI fails
         }
       }
-      
+
       // If OpenAI is not available or fails, use the basic implementation
       console.log('Using basic implementation for book query');
-      
+
       // For demonstration purposes, analyze the question to determine response type
       const lowerQuestion = question.toLowerCase();
       let response: AIResponse;
-      
+
       // Generate a simple response based on question type
       if (lowerQuestion.includes('character') || lowerQuestion.includes('who is') || lowerQuestion.includes('about') && (lowerQuestion.includes('person') || lowerQuestion.includes('people'))) {
         // Character question
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
         response = generateQuoteResponse(lowerQuestion, bookText);
       } else if ((lowerQuestion.includes('compare') || lowerQuestion.includes('contrast') || lowerQuestion.includes('difference')) && lowerQuestion.includes(' and ')) {
         // Comparison question
-        response = generateComparisonResponse(lowerQuestion, bookText);
+        response = generateComparisonResponse(lowerQuestion);
       } else if (lowerQuestion.includes('timeline') || lowerQuestion.includes('sequence') || lowerQuestion.includes('events') || lowerQuestion.includes('what happens')) {
         // Timeline question
         response = generateTimelineResponse(lowerQuestion, bookText);
@@ -109,9 +109,9 @@ export async function POST(request: NextRequest) {
           text: `Based on the book content, I found this relevant information: "${relevantPassage}"\n\nIn a complete implementation, this would use an AI model to provide a comprehensive answer to your question: "${question}"`
         };
       }
-      
+
       return NextResponse.json(response, { status: 200 });
-      
+
     } catch (error) {
       console.error('Error processing book query:', error);
       return NextResponse.json(
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-    
+
   } catch (error) {
     console.error('Error processing book query:', error);
     return NextResponse.json(
@@ -140,40 +140,40 @@ function findRelevantPassage(question: string, bookText: string): string {
     .replace(/[^\w\s]/g, '')
     .split(' ')
     .filter(word => word.length > 3 && !['what', 'when', 'where', 'which', 'about', 'there'].includes(word));
-  
+
   // Split book into paragraphs
   const paragraphs = bookText.split('\n\n');
-  
+
   // Score paragraphs based on keyword matches
   let bestParagraph = '';
   let highestScore = 0;
-  
+
   for (const paragraph of paragraphs) {
     if (paragraph.length < 30) continue; // Skip short paragraphs
-    
+
     let score = 0;
     const lowerParagraph = paragraph.toLowerCase();
-    
+
     for (const word of words) {
       if (lowerParagraph.includes(word)) {
         score += 1;
       }
     }
-    
+
     if (score > highestScore) {
       highestScore = score;
       bestParagraph = paragraph;
     }
   }
-  
+
   // If no good match, return the first substantial paragraph
   if (highestScore === 0) {
     bestParagraph = paragraphs.find(p => p.length > 100) || paragraphs[0];
   }
-  
+
   // Truncate to a reasonable length
-  return bestParagraph.length > 300 
-    ? bestParagraph.substring(0, 300) + '...' 
+  return bestParagraph.length > 300
+    ? bestParagraph.substring(0, 300) + '...'
     : bestParagraph;
 }
 
@@ -184,7 +184,7 @@ function generateCharacterResponse(question: string, bookText: string): AIRespon
   // Extract potential character names (this would be much more sophisticated in a real implementation)
   const potentialNames = extractPotentialCharacterNames(bookText);
   const mainCharacter = potentialNames[0] || 'the protagonist';
-  
+
   return {
     responseType: 'character_profile',
     character: {
@@ -223,7 +223,7 @@ function generateThemeResponse(question: string, bookText: string): AIResponse {
  */
 function generateQuoteResponse(question: string, bookText: string): AIResponse {
   const passage = findRelevantPassage(question, bookText);
-  
+
   return {
     responseType: 'quote_analysis',
     quote: {
@@ -239,12 +239,12 @@ function generateQuoteResponse(question: string, bookText: string): AIResponse {
 /**
  * Generate a comparison response
  */
-function generateComparisonResponse(question: string, bookText: string): AIResponse {
+function generateComparisonResponse(question: string): AIResponse {
   // Try to identify what's being compared
   const comparisonMatch = question.match(/compare\s+([a-z\s]+)\s+and\s+([a-z\s]+)/i);
   const element1 = comparisonMatch ? comparisonMatch[1].trim() : 'Element 1';
   const element2 = comparisonMatch ? comparisonMatch[2].trim() : 'Element 2';
-  
+
   return {
     responseType: 'comparison',
     comparison: {
@@ -296,7 +296,7 @@ function generateTimelineResponse(question: string, bookText: string): AIRespons
       color: 'amber'
     }
   ];
-  
+
   return {
     responseType: 'timeline',
     timeline: timelineEvents
@@ -311,25 +311,25 @@ function extractPotentialCharacterNames(bookText: string): string[] {
   // Simple approach: look for capitalized words that aren't at the start of sentences
   const words = bookText.split(/\s+/);
   const potentialNames = new Set<string>();
-  
+
   for (let i = 1; i < words.length; i++) {
     const word = words[i].replace(/[^\w]/g, '');
     // If word starts with capital letter and isn't at start of sentence
-    if (word.length > 1 && 
-        word[0] === word[0].toUpperCase() && 
-        word[0] !== word[0].toLowerCase() &&
-        !words[i-1].endsWith('.')) {
+    if (word.length > 1 &&
+      word[0] === word[0].toUpperCase() &&
+      word[0] !== word[0].toLowerCase() &&
+      !words[i - 1].endsWith('.')) {
       potentialNames.add(word);
     }
   }
-  
+
   // Count occurrences of each potential name
   const nameCounts = Array.from(potentialNames).map(name => {
     const regex = new RegExp(`\\b${name}\\b`, 'g');
     const count = (bookText.match(regex) || []).length;
     return { name, count };
   });
-  
+
   // Sort by frequency and return top 5
   return nameCounts
     .sort((a, b) => b.count - a.count)

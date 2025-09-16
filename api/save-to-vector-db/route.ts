@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create vector store
-    const vectorStore = await Chroma.fromTexts(
+    await Chroma.fromTexts(
       chunks,
       chunks.map((_, i) => ({ id: i.toString() })),
       embeddings,

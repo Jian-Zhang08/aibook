@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import BookUploader from '@/components/BookUploader';
 import BookCarousel from '@/components/BookCarousel';
 import { ProcessedBook } from '@/utils/bookProcessor';
@@ -19,12 +18,12 @@ export default function Home() {
       router.push(`/book/${bookId}`);
     }, 100);
   };
-  
+
   const handleUploadComplete = (book: ProcessedBook) => {
     console.log('Book uploaded successfully:', book);
     // Redirect happens inside the uploader component
   };
-  
+
   const handleUploadError = (error: Error) => {
     setUploadError(error.message);
   };
@@ -34,15 +33,15 @@ export default function Home() {
     try {
       setIsLoading(true);
       setUploadError(null);
-      
+
       // Call the API to prepare the built-in book
       const response = await fetch(`/api/prepare-builtin-book/${bookId}`);
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to prepare book');
       }
-      
+
       // Navigate to the book page
       handleBookSelect(bookId);
     } catch (error) {
@@ -75,11 +74,11 @@ export default function Home() {
           Upload a book PDF and ask any question about it. Get beautiful, interactive responses in seconds.
         </p>
 
-        <BookUploader 
+        <BookUploader
           onUploadComplete={handleUploadComplete}
           onUploadError={handleUploadError}
         />
-        
+
         {uploadError && (
           <div className="w-full mb-8 text-red-500 bg-red-50 dark:bg-red-900/10 p-4 rounded-md">
             Error: {uploadError}
@@ -90,15 +89,15 @@ export default function Home() {
           <h2 className="text-2xl font-bold mb-6 pb-2 border-b border-gray-200 dark:border-gray-700 inline-block">
             Try with a sample book
           </h2>
-          
+
           <div className={`w-full transition-opacity duration-300 ${isLoading ? 'opacity-70' : 'opacity-100'}`}>
-            <BookCarousel 
+            <BookCarousel
               books={builtinBooks}
               onBookSelect={setupBuiltinBook}
               disabled={isLoading}
             />
           </div>
-          
+
           <div className="h-16 mt-4 flex items-center justify-center">
             {isLoading && (
               <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500"></div>

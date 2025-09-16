@@ -12,11 +12,11 @@ interface ThemeSymbolCardProps {
 /**
  * Card component for displaying thematic elements and symbols from the book
  */
-export default function ThemeSymbolCard({ 
-  title, 
-  description, 
+export default function ThemeSymbolCard({
+  title,
+  description,
   examples = [],
-  type 
+  type
 }: ThemeSymbolCardProps) {
   const getTypeStyles = () => {
     switch (type) {
@@ -71,16 +71,16 @@ export default function ThemeSymbolCard({
         {styles.icon && <div className="mr-3">{styles.icon}</div>}
         <h3 className={`text-lg font-bold ${styles.title}`}>{title}</h3>
       </div>
-      
+
       <p className="text-gray-700 dark:text-gray-300 mb-4">{description}</p>
-      
+
       {examples.length > 0 && (
         <div>
           <h4 className="font-semibold mb-2 text-sm uppercase text-gray-500 dark:text-gray-400">Examples in the text</h4>
           <ul className="space-y-2">
             {examples.map((example, index) => (
               <li key={index} className="text-sm border-l-2 border-gray-300 dark:border-gray-600 pl-3 py-1">
-                <p className="italic text-gray-600 dark:text-gray-400">"{example.text}"</p>
+                <p className="italic text-gray-600 dark:text-gray-400">&ldquo;{example.text}&rdquo;</p>
                 {example.reference && (
                   <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                     — {example.reference}

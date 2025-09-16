@@ -13,22 +13,22 @@ declare module 'pdf-parse/lib/pdf-parse.js' {
     CreationDate?: string;
     ModDate?: string;
     Trapped?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   }
 
   interface PDFData {
     numpages: number;
     numrender: number;
     info: PDFInfo;
-    metadata: any;
+    metadata: unknown;
     text: string;
     version: string;
   }
 
   function pdf(
-    dataBuffer: Buffer, 
+    dataBuffer: Buffer,
     options?: {
-      pagerender?: (pageData: any) => string;
+      pagerender?: (pageData: unknown) => string;
       max?: number;
       version?: string;
     }

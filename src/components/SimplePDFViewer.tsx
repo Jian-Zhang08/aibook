@@ -13,7 +13,7 @@ interface SimplePDFViewerProps {
  */
 export default function SimplePDFViewer({ pdfUrl, onClose }: SimplePDFViewerProps) {
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   // Add a timestamp to prevent caching
   const urlWithTimestamp = `${pdfUrl}?t=${Date.now()}`;
@@ -24,7 +24,7 @@ export default function SimplePDFViewer({ pdfUrl, onClose }: SimplePDFViewerProp
         {/* Header with controls */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-bold">PDF Viewer</h2>
-          
+
           <div className="flex items-center space-x-2">
             <a
               href={pdfUrl}
@@ -34,7 +34,7 @@ export default function SimplePDFViewer({ pdfUrl, onClose }: SimplePDFViewerProp
             >
               Open in New Tab
             </a>
-            
+
             <button
               onClick={onClose}
               className="p-2 rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
@@ -46,7 +46,7 @@ export default function SimplePDFViewer({ pdfUrl, onClose }: SimplePDFViewerProp
             </button>
           </div>
         </div>
-        
+
         {/* PDF Content */}
         <div className="flex-1 overflow-hidden bg-gray-50 dark:bg-gray-900">
           {loading && (
@@ -54,7 +54,7 @@ export default function SimplePDFViewer({ pdfUrl, onClose }: SimplePDFViewerProp
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
             </div>
           )}
-          
+
           <object
             data={urlWithTimestamp}
             type="application/pdf"
@@ -75,10 +75,10 @@ export default function SimplePDFViewer({ pdfUrl, onClose }: SimplePDFViewerProp
               <p className="text-gray-700 dark:text-gray-300 mb-4">
                 Your browser does not support inline PDF viewing.
               </p>
-              <a 
-                href={pdfUrl} 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href={pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors"
               >
                 Download PDF

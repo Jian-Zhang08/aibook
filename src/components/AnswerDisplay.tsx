@@ -6,11 +6,11 @@ import Timeline from './Timeline';
 import ThemeSymbolCard from './ThemeSymbolCard';
 import { TimelineEvent } from './Timeline';
 
-export type ResponseType = 
-  | 'text' 
-  | 'character_profile' 
-  | 'timeline' 
-  | 'theme_analysis' 
+export type ResponseType =
+  | 'text'
+  | 'character_profile'
+  | 'timeline'
+  | 'theme_analysis'
   | 'quote_analysis'
   | 'comparison'
   | 'themes'
@@ -62,7 +62,7 @@ export interface AIResponse {
   themes?: ThemeData[];
   quote?: QuoteData;
   comparison?: ComparisonData;
-  
+
   // New fields for Great Gatsby demo
   characterName?: string;
   traits?: string[];
@@ -84,10 +84,10 @@ interface AnswerDisplayProps {
 /**
  * Component for displaying AI-generated answers about books in various formats
  */
-export default function AnswerDisplay({ 
-  question, 
-  response, 
-  isLoading 
+export default function AnswerDisplay({
+  question,
+  response,
+  isLoading
 }: AnswerDisplayProps) {
   if (isLoading) {
     return (
@@ -100,7 +100,7 @@ export default function AnswerDisplay({
       </div>
     );
   }
-  
+
   if (!response) {
     return null;
   }
@@ -115,7 +115,7 @@ export default function AnswerDisplay({
             ))}
           </div>
         );
-        
+
       case 'character_profile':
         if (response.characters && response.characters.length > 0) {
           return (
@@ -148,7 +148,7 @@ export default function AnswerDisplay({
           );
         }
         return null;
-        
+
       case 'timeline':
         return response.timeline && Array.isArray(response.timeline) ? (
           <div className="mt-6">
@@ -156,10 +156,10 @@ export default function AnswerDisplay({
           </div>
         ) : (
           <div className="prose dark:prose-invert max-w-none">
-            <p>Sorry, I couldn't generate a timeline for this query.</p>
+            <p>Sorry, I couldn&apos;t generate a timeline for this query.</p>
           </div>
         );
-        
+
       case 'theme_analysis':
         return response.themes ? (
           <div className="grid grid-cols-1 gap-6 mt-6">
@@ -174,7 +174,7 @@ export default function AnswerDisplay({
             ))}
           </div>
         ) : null;
-        
+
       case 'themes':
         return (
           <div className="space-y-6">
@@ -193,23 +193,23 @@ export default function AnswerDisplay({
             </div>
           </div>
         );
-        
+
       case 'character':
         return (
           <div className="space-y-6">
             {response.text && (
               <p className="text-lg mb-4">{response.text}</p>
             )}
-            
+
             <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
               <h3 className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-3">{response.characterName}</h3>
-              
+
               {response.description && (
                 <div className="mb-6">
                   <p className="text-gray-700 dark:text-gray-300">{response.description}</p>
                 </div>
               )}
-              
+
               {response.traits && response.traits.length > 0 && (
                 <div className="mb-6">
                   <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Character Traits</h4>
@@ -222,7 +222,7 @@ export default function AnswerDisplay({
                   </div>
                 </div>
               )}
-              
+
               {response.timeline && (
                 <div>
                   <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Key Events</h4>
@@ -230,7 +230,7 @@ export default function AnswerDisplay({
                     {response.timeline.map((event, i) => (
                       <div key={i} className="flex">
                         <div className="mr-3 font-bold text-purple-600 dark:text-purple-400 w-16">{event.year}</div>
-                        <div className="flex-1">{event.event}</div>
+                        <div className="flex-1">{event.title}</div>
                       </div>
                     ))}
                   </div>
@@ -239,31 +239,31 @@ export default function AnswerDisplay({
             </div>
           </div>
         );
-        
+
       case 'symbol':
         return (
           <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
               <h3 className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-3">{response.symbolName}</h3>
-              
+
               {response.text && (
                 <p className="mb-4 text-gray-700 dark:text-gray-300">{response.text}</p>
               )}
-              
+
               {response.analysis && (
                 <div className="mb-6">
                   <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Analysis</h4>
                   <p className="text-gray-700 dark:text-gray-300">{response.analysis}</p>
                 </div>
               )}
-              
+
               {response.quotes && response.quotes.length > 0 && (
                 <div>
                   <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Key Quotes</h4>
                   <div className="space-y-4">
                     {response.quotes.map((quote, i) => (
                       <div key={i} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-md">
-                        <blockquote className="italic mb-2 text-gray-700 dark:text-gray-300">"{quote.text}"</blockquote>
+                        <blockquote className="italic mb-2 text-gray-700 dark:text-gray-300">&ldquo;{quote.text}&rdquo;</blockquote>
                         <p className="text-sm text-gray-600 dark:text-gray-400">{quote.explanation}</p>
                       </div>
                     ))}
@@ -273,13 +273,13 @@ export default function AnswerDisplay({
             </div>
           </div>
         );
-        
+
       case 'quote_analysis':
         return response.quote ? (
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
             <div className="mb-6 text-center">
               <blockquote className="text-xl italic font-medium text-gray-800 dark:text-gray-200">
-                "{response.quote.text}"
+                &ldquo;{response.quote.text}&rdquo;
               </blockquote>
               {response.quote.speaker && (
                 <p className="mt-2 text-gray-500 dark:text-gray-400">
@@ -288,12 +288,12 @@ export default function AnswerDisplay({
                 </p>
               )}
             </div>
-            
+
             <div className="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
               <h3 className="text-lg font-bold mb-3">Analysis:</h3>
               <p>{response.quote.analysis}</p>
             </div>
-            
+
             {response.quote.themes && response.quote.themes.length > 0 && (
               <div className="mt-4">
                 <h3 className="text-lg font-bold mb-2">Related Themes:</h3>
@@ -308,7 +308,7 @@ export default function AnswerDisplay({
             )}
           </div>
         ) : null;
-        
+
       case 'comparison':
         return response.comparison ? (
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
@@ -317,13 +317,13 @@ export default function AnswerDisplay({
                 <h3 className="font-bold text-lg mb-2">{response.comparison.element1.name}</h3>
                 <p className="text-gray-700 dark:text-gray-300">{response.comparison.element1.description}</p>
               </div>
-              
+
               <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
                 <h3 className="font-bold text-lg mb-2">{response.comparison.element2.name}</h3>
                 <p className="text-gray-700 dark:text-gray-300">{response.comparison.element2.description}</p>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h3 className="font-bold text-lg mb-3 text-green-600 dark:text-green-400">Similarities</h3>
@@ -336,7 +336,7 @@ export default function AnswerDisplay({
                   ))}
                 </ul>
               </div>
-              
+
               <div>
                 <h3 className="font-bold text-lg mb-3 text-red-600 dark:text-red-400">Differences</h3>
                 <ul className="space-y-2">
@@ -351,11 +351,11 @@ export default function AnswerDisplay({
             </div>
           </div>
         ) : null;
-        
+
       default:
         return (
           <div className="prose dark:prose-invert max-w-none">
-            <p>Sorry, I couldn't generate a proper response. Please try asking a different question.</p>
+            <p>Sorry, I couldn&apos;t generate a proper response. Please try asking a different question.</p>
           </div>
         );
     }
@@ -367,11 +367,11 @@ export default function AnswerDisplay({
         <h2 className="font-medium text-gray-500 dark:text-gray-400 text-sm">Your question:</h2>
         <p className="text-lg font-medium">{question}</p>
       </div>
-      
+
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         {renderContent()}
       </div>
-      
+
       <div className="mt-4 flex justify-between">
         <button className="text-sm text-purple-600 dark:text-purple-400 hover:underline">
           Ask a follow-up question

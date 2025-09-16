@@ -48,18 +48,16 @@ export default function UploadProgressModal({
           {steps.map((step, index) => {
             const isCurrentStep = index === currentStep;
             const isCompleted = index < currentStep;
-            const isPending = index > currentStep;
 
             return (
               <div
                 key={step.id}
-                className={`flex items-start space-x-4 p-4 rounded-lg transition-colors ${
-                  isCurrentStep
+                className={`flex items-start space-x-4 p-4 rounded-lg transition-colors ${isCurrentStep
                     ? 'bg-purple-50 dark:bg-purple-900/20'
                     : isCompleted
-                    ? 'bg-green-50 dark:bg-green-900/20'
-                    : 'bg-gray-50 dark:bg-gray-700/20'
-                }`}
+                      ? 'bg-green-50 dark:bg-green-900/20'
+                      : 'bg-gray-50 dark:bg-gray-700/20'
+                  }`}
               >
                 <div className="flex-shrink-0">
                   {isCompleted ? (

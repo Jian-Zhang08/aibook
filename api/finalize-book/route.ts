@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import { readFile } from 'fs/promises';
 import { Chroma } from '@langchain/community/vectorstores/chroma';
 import { OpenAIEmbeddings } from '@langchain/openai';
 
