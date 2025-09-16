@@ -5,10 +5,6 @@ import { existsSync } from 'fs';
 import pdf from 'pdf-parse/lib/pdf-parse.js';
 import { ProcessedBook } from '@/utils/bookProcessor';
 
-// For server components, we don't need to set worker path
-// pdfjs-dist will work in Node.js environment without worker
-// This approach avoids the "Module not found" error
-
 /**
  * Maximum file size for uploads (60MB)
  */
@@ -37,13 +33,10 @@ async function ensureDirectoryExists(directory: string) {
 /**
  * API endpoint for uploading and processing book files
  */
-export async function POST(request: NextRequest) {
+module.exports = async (req: any, res: any) => {
   try {
-    if (!request.body) {
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400 }
-      );
+    if (!req.body) {
+      return res.status(400).json({ error: 'No file provided' });
     }
 
     // Ensure the directories exist
@@ -52,37 +45,25 @@ export async function POST(request: NextRequest) {
       await ensureDirectoryExists(SAMPLES_DIR);
     } catch (error) {
       console.error('Error creating directories:', error);
-      return NextResponse.json(
-        { error: 'Failed to create storage directories' },
-        { status: 500 }
-      );
+      return res.status(500).json({ error: 'Failed to create storage directories' });
     }
 
     // Parse multipart form data
-    const formData = await request.formData();
+    const formData = await req.formData();
     const file = formData.get('file') as File | null;
 
     if (!file) {
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400 }
-      );
+      return res.status(400).json({ error: 'No file provided' });
     }
 
     // Validate file type
     if (file.type !== 'application/pdf') {
-      return NextResponse.json(
-        { error: 'Only PDF files are supported' },
-        { status: 400 }
-      );
+      return res.status(400).json({ error: 'Only PDF files are supported' });
     }
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { error: 'File size exceeds the limit (60MB)' },
-        { status: 400 }
-      );
+      return res.status(400).json({ error: 'File size exceeds the limit (60MB)' });
     }
 
     // Generate a unique ID for the book
@@ -129,21 +110,15 @@ export async function POST(request: NextRequest) {
       };
 
       // Return the processed book data
-      return NextResponse.json(bookData, { status: 200 });
+      return res.status(200).json(bookData);
 
     } catch (error) {
       console.error('Error extracting PDF content:', error);
-      return NextResponse.json(
-        { error: 'Failed to process PDF content' },
-        { status: 500 }
-      );
+      return res.status(500).json({ error: 'Failed to process PDF content' });
     }
 
   } catch (error) {
     console.error('Error uploading file:', error);
-    return NextResponse.json(
-      { error: 'Failed to upload file' },
-      { status: 500 }
-    );
+    return res.status(500).json({ error: 'Failed to upload file' });
   }
-} 
+};

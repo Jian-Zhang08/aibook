@@ -17,8 +17,7 @@ export async function GET(
   { params }: { params: Promise<{ bookId: string }> }
 ) {
   try {
-    // Ensure params is fully resolved before accessing its properties
-    const { bookId } = await Promise.resolve(params);
+    const { bookId } = await params;
 
     if (!bookId) {
       return NextResponse.json(
@@ -62,7 +61,6 @@ export async function GET(
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `inline; filename="${bookId}.pdf"`,
-        // Add cache headers
         'Cache-Control': 'public, max-age=3600',
       },
     });
@@ -74,4 +72,4 @@ export async function GET(
       { status: 500 }
     );
   }
-} 
+}

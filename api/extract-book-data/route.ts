@@ -12,34 +12,28 @@ const UPLOADS_DIR = join(process.cwd(), 'uploads');
 /**
  * API endpoint for extracting text content from uploaded PDF
  */
-export async function POST(request: NextRequest) {
+module.exports = async (req: any, res: any) => {
   try {
-    const { filename } = await request.json();
+    const { filename } = req.body;
 
     if (!filename) {
-      return NextResponse.json(
-        { error: 'Filename is required' },
-        { status: 400 }
-      );
+      return res.status(400).json({ error: 'Filename is required' });
     }
 
     const filePath = join(UPLOADS_DIR, filename);
 
     if (!existsSync(filePath)) {
-      return NextResponse.json(
-        { error: 'File not found' },
-        { status: 404 }
-      );
+      return res.status(404).json({ error: 'File not found' });
     }
 
     // Read the PDF file
     const dataBuffer = await readFile(filePath);
-    
+
     // Extract text content
     const data = await pdf(dataBuffer);
-    
+
     // Return the extracted content
-    return NextResponse.json({
+    return res.status(200).json({
       success: true,
       content: data.text,
       numPages: data.numpages,
@@ -48,9 +42,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error extracting book data:', error);
-    return NextResponse.json(
-      { error: 'Failed to extract book data' },
-      { status: 500 }
-    );
+    return res.status(500).json({ error: 'Failed to extract book data' });
   }
-} 
+};

@@ -15,94 +15,93 @@ const SAMPLES_DIR = join(process.cwd(), 'public', 'samples');
 /**
  * API endpoint for retrieving book data by ID
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ bookId: string }> }
-) {
+module.exports = async (req: any, res: any) => {
   try {
-    // Ensure params is fully resolved before accessing its properties
-    const { bookId } = await Promise.resolve(params);
+    const { bookId } = req.query;
 
     if (!bookId) {
-      return NextResponse.json(
-        { error: 'Book ID is required' },
-        { status: 400 }
-      );
+      return res.status(400).json({ error: 'Book ID is required' });
     }
 
-    // Check if this is a built-in book
-    const builtinBook = builtinBooks.find(b => b.id === bookId);
+    // First, check if it's a built-in book
+    const builtinBook = builtinBooks.find(book => book.id === bookId);
     if (builtinBook) {
-      return NextResponse.json({
-        id: builtinBook.id,
-        title: builtinBook.title,
-        author: builtinBook.author,
-        totalPages: 100, // Placeholder
-        isProcessed: true,
-        uploadDate: new Date()
-      });
+      // Try to find the PDF file for the built-in book
+      const possiblePaths = [
+        join(SAMPLES_DIR, `${bookId}.pdf`),
+        join(SAMPLES_DIR, builtinBook.filename),
+      ];
+
+      let bookPath: string | null = null;
+      for (const path of possiblePaths) {
+        if (existsSync(path)) {
+          bookPath = path;
+          break;
+        }
+      }
+
+      if (bookPath) {
+        try {
+          const fileBuffer = await readFile(bookPath);
+          const pdfData = await pdf(fileBuffer);
+
+          const bookData: ProcessedBook = {
+            id: bookId,
+            title: builtinBook.title,
+            author: builtinBook.author,
+            totalPages: pdfData.numpages,
+            isProcessed: true,
+            uploadDate: new Date(),
+            content: pdfData.text.substring(0, 1000) + '...'
+          };
+
+          return res.status(200).json(bookData);
+        } catch (error) {
+          console.error('Error reading built-in book:', error);
+        }
+      }
     }
 
-    // Check if the PDF file exists in multiple locations
-    const pdfPaths = [
+    // Try to find uploaded book
+    const possiblePaths = [
       join(UPLOADS_DIR, `${bookId}.pdf`),
       join(SAMPLES_DIR, `${bookId}.pdf`),
     ];
 
-    // Find the first path that exists
-    let pdfPath = null;
-    for (const path of pdfPaths) {
+    let bookPath: string | null = null;
+    for (const path of possiblePaths) {
       if (existsSync(path)) {
-        pdfPath = path;
+        bookPath = path;
         break;
       }
     }
 
-    if (!pdfPath) {
-      return NextResponse.json(
-        { error: 'Book not found' },
-        { status: 404 }
-      );
+    if (!bookPath) {
+      return res.status(404).json({ error: 'Book not found' });
     }
 
-    // Read the file
-    const fileBuffer = await readFile(pdfPath);
-
-    // Extract basic information from the PDF
     try {
+      const fileBuffer = await readFile(bookPath);
       const pdfData = await pdf(fileBuffer);
 
-      // Get title from PDF metadata or use ID
-      const title = pdfData.info.Title || `Book ${bookId}`;
-      const author = pdfData.info.Author || 'Unknown Author';
-
-      // Create the book object
       const bookData: ProcessedBook = {
         id: bookId,
-        title: title.toString(),
-        author: author?.toString() || 'Unknown Author',
+        title: pdfData.info.Title || bookId,
+        author: pdfData.info.Author || 'Unknown Author',
         totalPages: pdfData.numpages,
         isProcessed: true,
         uploadDate: new Date(),
-        // Only return a preview of the content
-        content: pdfData.text.substring(0, 500) + '...'
+        content: pdfData.text.substring(0, 1000) + '...'
       };
 
-      return NextResponse.json(bookData, { status: 200 });
-
+      return res.status(200).json(bookData);
     } catch (error) {
-      console.error('Error parsing PDF:', error);
-      return NextResponse.json(
-        { error: 'Failed to process book data' },
-        { status: 500 }
-      );
+      console.error('Error reading book:', error);
+      return res.status(500).json({ error: 'Failed to read book' });
     }
 
   } catch (error) {
     console.error('Error retrieving book:', error);
-    return NextResponse.json(
-      { error: 'Failed to retrieve book' },
-      { status: 500 }
-    );
+    return res.status(500).json({ error: 'Failed to retrieve book' });
   }
-} 
+};
