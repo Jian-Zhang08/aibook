@@ -6,22 +6,42 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "setup-books": "node setup-books.js",
+    "predev": "npm run setup-books"
   },
   "dependencies": {
+    "@langchain/community": "^0.3.43",
+    "@langchain/openai": "^0.5.10",
+    "chromadb": "^2.4.4",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "jspdf": "^3.0.1",
+    "langchain": "^0.3.26",
+    "next": "15.3.2",
+    "openai": "^4.99.0",
+    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^4.8.69",
+    "pdfkit": "^0.17.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.3.2"
+    "react-pdf": "^9.2.1"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@babel/preset-env": "^7.27.2",
+    "@babel/preset-typescript": "^7.27.1",
+    "@babel/register": "^7.27.1",
+    "@eslint/eslintrc": "^3",
+    "@svgr/cli": "^8.1.0",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pdf-parse": "^1.1.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
-    "@eslint/eslintrc": "^3"
+    "module-alias": "^2.2.3",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
