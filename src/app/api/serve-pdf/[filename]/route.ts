@@ -12,12 +12,18 @@ const SAMPLES_DIR = join(process.cwd(), 'public', 'samples');
 /**
  * API endpoint for directly serving PDF files
  */
-module.exports = async (req: any, res: any) => {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ filename: string }> }
+) {
   try {
-    const { filename } = req.query;
+    const { filename } = await params;
 
     if (!filename) {
-      return res.status(400).json({ error: 'Filename is required' });
+      return NextResponse.json(
+        { error: 'Filename is required' },
+        { status: 400 }
+      );
     }
 
     // Try multiple locations for the PDF file
@@ -38,7 +44,10 @@ module.exports = async (req: any, res: any) => {
     // If no PDF was found, return 404
     if (!pdfPath) {
       console.error(`PDF not found: ${filename}. Checked paths:`, possiblePaths);
-      return res.status(404).json({ error: 'PDF file not found' });
+      return NextResponse.json(
+        { error: 'PDF file not found' },
+        { status: 404 }
+      );
     }
 
     console.log(`Serving PDF from: ${pdfPath}`);
@@ -47,13 +56,19 @@ module.exports = async (req: any, res: any) => {
     const fileBuffer = await readFile(pdfPath);
 
     // Return the PDF file with appropriate headers
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
-    res.setHeader('Cache-Control', 'public, max-age=3600');
-    res.send(fileBuffer);
+    return new NextResponse(fileBuffer, {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `inline; filename="${filename}"`,
+        'Cache-Control': 'public, max-age=3600',
+      },
+    });
 
   } catch (error) {
     console.error('Error serving PDF:', error);
-    return res.status(500).json({ error: 'Failed to serve PDF file' });
+    return NextResponse.json(
+      { error: 'Failed to serve PDF file' },
+      { status: 500 }
+    );
   }
-};
+}

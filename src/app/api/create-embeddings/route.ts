@@ -13,23 +13,32 @@ const UPLOADS_DIR = join(process.cwd(), 'uploads');
 /**
  * API endpoint for creating embeddings from book content
  */
-module.exports = async (req: any, res: any) => {
+export async function POST(request: NextRequest) {
   try {
-    const { filename } = req.body;
+    const { filename } = await request.json();
 
     if (!filename) {
-      return res.status(400).json({ error: 'Filename is required' });
+      return NextResponse.json(
+        { error: 'Filename is required' },
+        { status: 400 }
+      );
     }
 
     // Check if OpenAI API key is available
     if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({ error: 'OpenAI API key is not configured' });
+      return NextResponse.json(
+        { error: 'OpenAI API key is not configured' },
+        { status: 500 }
+      );
     }
 
     const filePath = join(UPLOADS_DIR, filename);
 
     if (!existsSync(filePath)) {
-      return res.status(404).json({ error: 'File not found' });
+      return NextResponse.json(
+        { error: 'File not found' },
+        { status: 404 }
+      );
     }
 
     // Read the extracted content
@@ -54,7 +63,7 @@ module.exports = async (req: any, res: any) => {
 
     // Store the embeddings (in a real implementation, you would save these to a database)
     // For now, we'll just return success
-    return res.status(200).json({
+    return NextResponse.json({
       success: true,
       numChunks: chunks.length,
       message: 'Embeddings created successfully'
@@ -62,6 +71,9 @@ module.exports = async (req: any, res: any) => {
 
   } catch (error) {
     console.error('Error creating embeddings:', error);
-    return res.status(500).json({ error: 'Failed to create embeddings' });
+    return NextResponse.json(
+      { error: 'Failed to create embeddings' },
+      { status: 500 }
+    );
   }
-};
+}

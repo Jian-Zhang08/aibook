@@ -33,10 +33,13 @@ async function ensureDirectoryExists(directory: string) {
 /**
  * API endpoint for uploading and processing book files
  */
-module.exports = async (req: any, res: any) => {
+export async function POST(request: NextRequest) {
   try {
-    if (!req.body) {
-      return res.status(400).json({ error: 'No file provided' });
+    if (!request.body) {
+      return NextResponse.json(
+        { error: 'No file provided' },
+        { status: 400 }
+      );
     }
 
     // Ensure the directories exist
@@ -45,25 +48,37 @@ module.exports = async (req: any, res: any) => {
       await ensureDirectoryExists(SAMPLES_DIR);
     } catch (error) {
       console.error('Error creating directories:', error);
-      return res.status(500).json({ error: 'Failed to create storage directories' });
+      return NextResponse.json(
+        { error: 'Failed to create storage directories' },
+        { status: 500 }
+      );
     }
 
     // Parse multipart form data
-    const formData = await req.formData();
+    const formData = await request.formData();
     const file = formData.get('file') as File | null;
 
     if (!file) {
-      return res.status(400).json({ error: 'No file provided' });
+      return NextResponse.json(
+        { error: 'No file provided' },
+        { status: 400 }
+      );
     }
 
     // Validate file type
     if (file.type !== 'application/pdf') {
-      return res.status(400).json({ error: 'Only PDF files are supported' });
+      return NextResponse.json(
+        { error: 'Only PDF files are supported' },
+        { status: 400 }
+      );
     }
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      return res.status(400).json({ error: 'File size exceeds the limit (60MB)' });
+      return NextResponse.json(
+        { error: 'File size exceeds the limit (60MB)' },
+        { status: 400 }
+      );
     }
 
     // Generate a unique ID for the book
@@ -110,15 +125,21 @@ module.exports = async (req: any, res: any) => {
       };
 
       // Return the processed book data
-      return res.status(200).json(bookData);
+      return NextResponse.json(bookData, { status: 200 });
 
     } catch (error) {
       console.error('Error extracting PDF content:', error);
-      return res.status(500).json({ error: 'Failed to process PDF content' });
+      return NextResponse.json(
+        { error: 'Failed to process PDF content' },
+        { status: 500 }
+      );
     }
 
   } catch (error) {
     console.error('Error uploading file:', error);
-    return res.status(500).json({ error: 'Failed to upload file' });
+    return NextResponse.json(
+      { error: 'Failed to upload file' },
+      { status: 500 }
+    );
   }
-};
+}

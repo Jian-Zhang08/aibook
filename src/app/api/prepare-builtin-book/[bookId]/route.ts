@@ -14,23 +14,35 @@ const SAMPLES_DIR = join(process.cwd(), 'public', 'samples');
  * API endpoint to prepare a built-in book for use
  * Copies the book from the built-in directory to the samples directory if needed
  */
-module.exports = async (req: any, res: any) => {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ bookId: string }> }
+) {
   try {
-    const { bookId } = req.query;
+    const { bookId } = await params;
 
     if (!bookId) {
-      return res.status(400).json({ error: 'Book ID is required' });
+      return NextResponse.json(
+        { error: 'Book ID is required' },
+        { status: 400 }
+      );
     }
 
     // Find the book in our list
     const book = builtinBooks.find(b => b.id === bookId);
     if (!book) {
-      return res.status(404).json({ error: 'Book not found in built-in books' });
+      return NextResponse.json(
+        { error: 'Book not found in built-in books' },
+        { status: 404 }
+      );
     }
 
     // Skip placeholder books
     if (book.isPlaceholder || !book.filename) {
-      return res.status(400).json({ error: 'Cannot prepare placeholder book' });
+      return NextResponse.json(
+        { error: 'Cannot prepare placeholder book' },
+        { status: 400 }
+      );
     }
 
     // Check if the book already exists in the samples directory
@@ -49,7 +61,7 @@ module.exports = async (req: any, res: any) => {
       console.log(`Copied built-in book: ${book.title} to samples directory`);
     }
 
-    return res.status(200).json({
+    return NextResponse.json({
       success: true,
       message: `Book ${book.title} is ready for use`,
       bookId: bookId
@@ -57,6 +69,9 @@ module.exports = async (req: any, res: any) => {
 
   } catch (error) {
     console.error('Error preparing built-in book:', error);
-    return res.status(500).json({ error: 'Failed to prepare built-in book' });
+    return NextResponse.json(
+      { error: 'Failed to prepare built-in book' },
+      { status: 500 }
+    );
   }
-};
+}

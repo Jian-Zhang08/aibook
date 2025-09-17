@@ -105,13 +105,17 @@ export default function BookUploader({
 
       setCurrentStep(1); // Move to extraction step
 
+      // Get the bookId from the upload response
+      const uploadData = await response.json();
+      const bookId = uploadData.id;
+
       // Step 2: Extract book data
       const extractResponse = await fetch('/api/extract-book-data', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ filename: file.name }),
+        body: JSON.stringify({ filename: `${bookId}.pdf` }),
       });
 
       if (!extractResponse.ok) {
@@ -126,7 +130,7 @@ export default function BookUploader({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ filename: file.name }),
+        body: JSON.stringify({ filename: `${bookId}.pdf` }),
       });
 
       if (!embedResponse.ok) {
@@ -141,7 +145,7 @@ export default function BookUploader({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ filename: file.name }),
+        body: JSON.stringify({ filename: `${bookId}.pdf` }),
       });
 
       if (!vectorResponse.ok) {
@@ -156,20 +160,31 @@ export default function BookUploader({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ filename: file.name }),
+        body: JSON.stringify({ filename: `${bookId}.pdf` }),
       });
 
       if (!finalResponse.ok) {
         throw new Error('Failed to finalize book processing');
       }
 
-      const bookData: ProcessedBook = await finalResponse.json();
+      const finalizeData = await finalResponse.json();
+
+      // Use the bookId from the upload response
+      const bookData: ProcessedBook = {
+        id: bookId,
+        title: uploadData.title,
+        author: uploadData.author,
+        totalPages: uploadData.totalPages,
+        isProcessed: true,
+        uploadDate: new Date(),
+        content: uploadData.content
+      };
 
       // Signal completion
       if (onUploadComplete) onUploadComplete(bookData);
 
       // Redirect to book page
-      router.push(`/book/${bookData.id}`);
+      router.push(`/book/${bookId}`);
 
     } catch (error) {
       console.error('Error processing book:', error);

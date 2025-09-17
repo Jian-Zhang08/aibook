@@ -15,12 +15,18 @@ const SAMPLES_DIR = join(process.cwd(), 'public', 'samples');
 /**
  * API endpoint for retrieving book data by ID
  */
-module.exports = async (req: any, res: any) => {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ bookId: string }> }
+) {
   try {
-    const { bookId } = req.query;
+    const { bookId } = await params;
 
     if (!bookId) {
-      return res.status(400).json({ error: 'Book ID is required' });
+      return NextResponse.json(
+        { error: 'Book ID is required' },
+        { status: 400 }
+      );
     }
 
     // First, check if it's a built-in book
@@ -55,7 +61,7 @@ module.exports = async (req: any, res: any) => {
             content: pdfData.text.substring(0, 1000) + '...'
           };
 
-          return res.status(200).json(bookData);
+          return NextResponse.json(bookData, { status: 200 });
         } catch (error) {
           console.error('Error reading built-in book:', error);
         }
@@ -77,7 +83,10 @@ module.exports = async (req: any, res: any) => {
     }
 
     if (!bookPath) {
-      return res.status(404).json({ error: 'Book not found' });
+      return NextResponse.json(
+        { error: 'Book not found' },
+        { status: 404 }
+      );
     }
 
     try {
@@ -94,14 +103,20 @@ module.exports = async (req: any, res: any) => {
         content: pdfData.text.substring(0, 1000) + '...'
       };
 
-      return res.status(200).json(bookData);
+      return NextResponse.json(bookData, { status: 200 });
     } catch (error) {
       console.error('Error reading book:', error);
-      return res.status(500).json({ error: 'Failed to read book' });
+      return NextResponse.json(
+        { error: 'Failed to read book' },
+        { status: 500 }
+      );
     }
 
   } catch (error) {
     console.error('Error retrieving book:', error);
-    return res.status(500).json({ error: 'Failed to retrieve book' });
+    return NextResponse.json(
+      { error: 'Failed to retrieve book' },
+      { status: 500 }
+    );
   }
-};
+}

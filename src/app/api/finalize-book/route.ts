@@ -12,62 +12,83 @@ const UPLOADS_DIR = join(process.cwd(), 'uploads');
 /**
  * API endpoint for finalizing book processing
  */
-module.exports = async (req: any, res: any) => {
+export async function POST(request: NextRequest) {
   try {
-    const { filename } = req.body;
+    const { filename } = await request.json();
 
     if (!filename) {
-      return res.status(400).json({ error: 'Filename is required' });
+      return NextResponse.json(
+        { error: 'Filename is required' },
+        { status: 400 }
+      );
     }
 
     // Check if OpenAI API key is available
     if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({ error: 'OpenAI API key is not configured' });
+      return NextResponse.json(
+        { error: 'OpenAI API key is not configured' },
+        { status: 500 }
+      );
     }
 
     const filePath = join(UPLOADS_DIR, filename);
 
     if (!existsSync(filePath)) {
-      return res.status(404).json({ error: 'File not found' });
+      return NextResponse.json(
+        { error: 'File not found' },
+        { status: 404 }
+      );
     }
 
-    // Initialize embeddings
-    const embeddings = new OpenAIEmbeddings({
-      openAIApiKey: process.env.OPENAI_API_KEY,
-    });
+    // Try to verify vector store, but don't fail if ChromaDB is not available
+    let vectorStoreVerified = false;
+    try {
+      // Initialize embeddings
+      const embeddings = new OpenAIEmbeddings({
+        openAIApiKey: process.env.OPENAI_API_KEY,
+      });
 
-    // Verify vector store exists and is accessible
-    const collectionName = filename.replace('.pdf', '');
-    const vectorStore = await Chroma.fromExistingCollection(
-      embeddings,
-      { collectionName }
-    );
+      // Verify vector store exists and is accessible
+      const collectionName = filename.replace('.pdf', '');
+      const vectorStore = await Chroma.fromExistingCollection(
+        embeddings,
+        { collectionName }
+      );
 
-    // Perform a test query to verify the vector store is working
-    const testResults = await vectorStore.similaritySearch(
-      "What is this book about?",
-      1
-    );
+      // Perform a test query to verify the vector store is working
+      const testResults = await vectorStore.similaritySearch(
+        "What is this book about?",
+        1
+      );
 
-    if (!testResults || testResults.length === 0) {
-      throw new Error('Vector store verification failed');
+      if (testResults && testResults.length > 0) {
+        vectorStoreVerified = true;
+      }
+    } catch (chromaError) {
+      console.warn('ChromaDB verification failed, continuing without vector store:', chromaError);
     }
 
     // Generate a unique ID for the book
     const bookId = Buffer.from(filename).toString('base64').replace(/[^a-zA-Z0-9]/g, '');
 
     // Return success with book information
-    return res.status(200).json({
+    return NextResponse.json({
       success: true,
       id: bookId,
       title: filename.replace('.pdf', ''),
       isProcessed: true,
       uploadDate: new Date().toISOString(),
-      message: 'Book processing completed successfully'
+      message: vectorStoreVerified
+        ? 'Book processing completed successfully'
+        : 'Book processing completed (vector store not available)',
+      vectorStoreAvailable: vectorStoreVerified
     });
 
   } catch (error) {
     console.error('Error finalizing book:', error);
-    return res.status(500).json({ error: 'Failed to finalize book processing' });
+    return NextResponse.json(
+      { error: 'Failed to finalize book processing' },
+      { status: 500 }
+    );
   }
-};
+}
