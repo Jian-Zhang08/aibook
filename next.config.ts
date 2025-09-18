@@ -5,7 +5,6 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   poweredByHeader: false,
   reactStrictMode: true,
-  swcMinify: true,
   compress: true,
   // Add CORS headers to allow PDF files to be served
   async headers() {

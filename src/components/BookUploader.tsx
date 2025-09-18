@@ -167,7 +167,7 @@ export default function BookUploader({
         throw new Error('Failed to finalize book processing');
       }
 
-      const finalizeData = await finalResponse.json();
+      await finalResponse.json();
 
       // Use the bookId from the upload response
       const bookData: ProcessedBook = {
